@@ -29,6 +29,7 @@ client.connect((err) => {
   const orderCollection = client.db("creativeAgency").collection("orders");
   const reviewCollection = client.db("creativeAgency").collection("reviews");
   const serviceCollection = client.db("creativeAgency").collection("services");
+  const adminCollection = client.db("creativeAgency").collection("admins");
 
   app.post("/addOrder", (req, res) => {
     const order = req.body;
@@ -37,12 +38,44 @@ client.connect((err) => {
       res.send(result.insertedCount > 0);
     });
   });
-
   app.get("/orders", (req, res) => {
     orderCollection.find({}).toArray((err, documents) => {
       res.send(documents);
     });
   });
+
+  app.post('/ordersByEmail', (req, res) => {
+    const email = req.body.email;
+    console.log(email);
+    adminCollection.find({ email: email })
+        .toArray((err, admins) => {
+           res.send(admins);
+        })
+})
+
+  app.post('/addAnAdmin', (req, res) => {
+    const name = req.body.name;
+    const email = req.body.email;
+
+    adminCollection.insertOne({ name, email})
+        .then(result => {
+            res.send(result);
+        })
+})
+
+app.get('/admins', (req, res) => {
+    adminCollection.find({})
+        .toArray((err, documents) => {
+            res.send(documents);
+        })
+});
+
+  app.post('/isAdmin', (req, res) => {
+    adminCollection.find({email: req.query.email})
+    .toArray((err, admins) => {
+      res.send(admins.length > 0)
+    })
+  })
 
   app.post("/addReview", (req, res) => {
     const name = req.body.name;
